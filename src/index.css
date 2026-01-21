@@ -342,3 +342,49 @@ h1, h2, h3 {
   text-align: center;
   padding: 2rem 1rem;
 }
+
+/* Pace chart */
+.pace-chart {
+  margin-bottom: 1.5rem;
+}
+
+.pace-chart h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.chart-tooltip {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.tooltip-row span:last-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tooltip-row.fade span:last-child {
+  color: var(--accent-primary);
+}

@@ -1,4 +1,5 @@
 import { secondsToTime, formatPace } from '../utils/calculations.js';
+import PaceChart from './PaceChart.jsx';
 
 const Summary = ({ projection }) => {
   const delta = projection.timeDelta;
@@ -79,6 +80,7 @@ const ResultsDisplay = ({ projection }) => {
       <h2>Projected Splits</h2>
       <Summary projection={projection} />
       <FadeRiskIndicator fadeRisk={projection.fadeRisk} />
+      <PaceChart splits={projection.splits} sustainablePace={projection.sustainablePace} />
       <SplitTable splits={projection.splits} />
     </div>
   );
