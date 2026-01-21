@@ -1,6 +1,6 @@
 import { secondsToTime, formatPace } from '../utils/calculations.js';
 
-function Summary({ projection, goalTimeSeconds }) {
+const Summary = ({ projection }) => {
   const delta = projection.timeDelta;
   const deltaClass = delta > 0 ? 'positive' : delta < 0 ? 'negative' : '';
 
@@ -24,51 +24,47 @@ function Summary({ projection, goalTimeSeconds }) {
       </div>
     </div>
   );
-}
+};
 
-function FadeRiskIndicator({ fadeRisk }) {
-  return (
-    <div className={`risk-indicator ${fadeRisk.level}`}>
-      <div className="level">Fade Risk: {fadeRisk.level.replace('-', ' ')}</div>
-      <div className="message">{fadeRisk.message}</div>
-    </div>
-  );
-}
+const FadeRiskIndicator = ({ fadeRisk }) => (
+  <div className={`risk-indicator ${fadeRisk.level}`}>
+    <div className="level">Fade Risk: {fadeRisk.level.replace('-', ' ')}</div>
+    <div className="message">{fadeRisk.message}</div>
+  </div>
+);
 
-function SplitTable({ splits }) {
-  return (
-    <table className="split-table">
-      <thead>
-        <tr>
-          <th>Mile</th>
-          <th>Pace</th>
-          <th>Split</th>
-          <th>Cumulative</th>
-          <th>Fade</th>
+const SplitTable = ({ splits }) => (
+  <table className="split-table">
+    <thead>
+      <tr>
+        <th>Mile</th>
+        <th>Pace</th>
+        <th>Split</th>
+        <th>Cumulative</th>
+        <th>Fade</th>
+      </tr>
+    </thead>
+    <tbody>
+      {splits.map((split) => (
+        <tr key={split.mile}>
+          <td>
+            {split.distance < 1
+              ? `${split.mile - 1}–${(split.mile - 1 + split.distance).toFixed(1)}`
+              : split.mile}
+          </td>
+          <td>{formatPace(split.pace)}</td>
+          <td>{secondsToTime(split.splitTime)}</td>
+          <td>{secondsToTime(split.cumulativeTime)}</td>
+          <td className={split.fadeAdjustment > 0 ? 'fade-cell' : ''}>
+            {split.fadeAdjustment > 0 ? `+${split.fadeAdjustment.toFixed(0)}s` : '—'}
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {splits.map((split) => (
-          <tr key={split.mile}>
-            <td>
-              {split.distance < 1
-                ? `${split.mile - 1}–${(split.mile - 1 + split.distance).toFixed(1)}`
-                : split.mile}
-            </td>
-            <td>{formatPace(split.pace)}</td>
-            <td>{secondsToTime(split.splitTime)}</td>
-            <td>{secondsToTime(split.cumulativeTime)}</td>
-            <td className={split.fadeAdjustment > 0 ? 'fade-cell' : ''}>
-              {split.fadeAdjustment > 0 ? `+${split.fadeAdjustment.toFixed(0)}s` : '—'}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
+      ))}
+    </tbody>
+  </table>
+);
 
-export default function ResultsDisplay({ projection, goalTimeSeconds }) {
+const ResultsDisplay = ({ projection }) => {
   if (!projection) {
     return (
       <div className="panel">
@@ -81,9 +77,11 @@ export default function ResultsDisplay({ projection, goalTimeSeconds }) {
   return (
     <div className="panel">
       <h2>Projected Splits</h2>
-      <Summary projection={projection} goalTimeSeconds={goalTimeSeconds} />
+      <Summary projection={projection} />
       <FadeRiskIndicator fadeRisk={projection.fadeRisk} />
       <SplitTable splits={projection.splits} />
     </div>
   );
-}
+};
+
+export default ResultsDisplay;

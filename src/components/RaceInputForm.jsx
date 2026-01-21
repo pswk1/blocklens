@@ -1,35 +1,31 @@
 import { RACE_DISTANCES } from '../utils/constants.js';
 
-function TimeInput({ label, value, onChange }) {
-  return (
-    <div className="form-group">
-      <label>{label}</label>
-      <input
-        type="text"
-        placeholder="H:MM:SS or MM:SS"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
-}
+const TimeInput = ({ label, value, onChange }) => (
+  <div className="form-group">
+    <label>{label}</label>
+    <input
+      type="text"
+      placeholder="H:MM:SS or MM:SS"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </div>
+);
 
-function RaceSelect({ label, value, onChange }) {
-  return (
-    <div className="form-group">
-      <label>{label}</label>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        {Object.entries(RACE_DISTANCES).map(([key, race]) => (
-          <option key={key} value={key}>
-            {race.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
+const RaceSelect = ({ label, value, onChange }) => (
+  <div className="form-group">
+    <label>{label}</label>
+    <select value={value} onChange={(e) => onChange(e.target.value)}>
+      {Object.entries(RACE_DISTANCES).map(([key, race]) => (
+        <option key={key} value={key}>
+          {race.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
 
-export default function RaceInputForm({ inputs, onInputChange }) {
+const RaceInputForm = ({ inputs, onInputChange }) => {
   const handleChange = (field) => (value) => {
     onInputChange({ ...inputs, [field]: value });
   };
@@ -85,4 +81,6 @@ export default function RaceInputForm({ inputs, onInputChange }) {
       </div>
     </div>
   );
-}
+};
+
+export default RaceInputForm;
