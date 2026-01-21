@@ -1,0 +1,24 @@
+{
+  "name": "blocklens",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pswk1/blocklens.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pswk1/blocklens/issues"
+  },
+  "homepage": "https://github.com/pswk1/blocklens#readme",
+  "description": "",
+  "devDependencies": {
+    "vitest": "^4.0.17"
+  }
+}
