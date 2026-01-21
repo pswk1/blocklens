@@ -10,7 +10,9 @@ A React app that helps runners explore pacing strategies and visualize projected
 
 ## Conventions
 
-- Functional components only
+- Follow [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
+- Use `const` for all variables and function expressions (arrow functions)
+- Functional components only (as arrow functions)
 - Keep calculation logic separate from UI components
 
 ## Key Domain Concepts
