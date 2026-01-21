@@ -33,7 +33,7 @@ const App = () => {
 
   return (
     <div className="app">
-      <h1 className="app-title">Race Day Simulator</h1>
+      <h1 className="app-title">BlockLens</h1>
       <div className="panels">
         <RaceInputForm inputs={inputs} onInputChange={setInputs} />
         <ResultsDisplay projection={projection} />
