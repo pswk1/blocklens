@@ -7,45 +7,67 @@ import {
   Tooltip,
   ReferenceLine,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 import { formatPace } from '../utils/calculations.js';
 
-const CustomTooltip = ({ active, payload, label }) => {
+const COLORS = {
+  main: '#fc4c02',
+  aggressive: '#f85149',
+  conservative: '#3fb950',
+};
+
+const CustomTooltip = ({ active, payload, label, compareMode }) => {
   if (!active || !payload || !payload.length) {
     return null;
   }
 
-  const data = payload[0].payload;
-
   return (
     <div className="chart-tooltip">
       <div className="tooltip-title">Mile {label}</div>
-      <div className="tooltip-row">
-        <span>Pace:</span>
-        <span>{formatPace(data.pace)}/mi</span>
-      </div>
-      {data.fadeAdjustment > 0 && (
-        <div className="tooltip-row fade">
-          <span>Fade:</span>
-          <span>+{data.fadeAdjustment.toFixed(0)}s</span>
+      {payload.map((entry) => (
+        <div key={entry.dataKey} className="tooltip-row">
+          <span style={{ color: entry.color }}>
+            {compareMode ? entry.name : 'Pace'}:
+          </span>
+          <span>{formatPace(entry.value)}/mi</span>
         </div>
-      )}
+      ))}
     </div>
   );
 };
 
-const PaceChart = ({ splits, sustainablePace }) => {
-  const chartData = splits.map((split) => ({
-    mile: split.mile,
-    pace: split.pace,
-    paceFormatted: formatPace(split.pace),
-    fadeAdjustment: split.fadeAdjustment,
-  }));
+const PaceChart = ({ splits, sustainablePace, comparisons }) => {
+  const compareMode = !!comparisons;
 
-  // Calculate Y-axis domain with padding
-  const paces = splits.map((s) => s.pace);
-  const minPace = Math.min(...paces, sustainablePace);
-  const maxPace = Math.max(...paces, sustainablePace);
+  // Build chart data with all scenarios
+  const chartData = splits.map((split, i) => {
+    const data = {
+      mile: split.mile,
+      pace: split.pace,
+    };
+
+    if (comparisons) {
+      data.aggressive = comparisons.aggressive.splits[i]?.pace;
+      data.conservative = comparisons.conservative.splits[i]?.pace;
+    }
+
+    return data;
+  });
+
+  // Calculate Y-axis domain across all scenarios
+  const allPaces = [
+    ...splits.map((s) => s.pace),
+    sustainablePace,
+  ];
+
+  if (comparisons) {
+    allPaces.push(...comparisons.aggressive.splits.map((s) => s.pace));
+    allPaces.push(...comparisons.conservative.splits.map((s) => s.pace));
+  }
+
+  const minPace = Math.min(...allPaces);
+  const maxPace = Math.max(...allPaces);
   const padding = (maxPace - minPace) * 0.2 || 15;
   const yMin = Math.floor((minPace - padding) / 5) * 5;
   const yMax = Math.ceil((maxPace + padding) / 5) * 5;
@@ -55,15 +77,8 @@ const PaceChart = ({ splits, sustainablePace }) => {
   return (
     <div className="pace-chart">
       <h3>Pace Over Distance</h3>
-      <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={compareMode ? 240 : 200}>
         <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="paceGradient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#3fb950" />
-              <stop offset="50%" stopColor="#f9a826" />
-              <stop offset="100%" stopColor="#fc4c02" />
-            </linearGradient>
-          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
           <XAxis
             dataKey="mile"
@@ -80,7 +95,7 @@ const PaceChart = ({ splits, sustainablePace }) => {
             width={50}
             reversed
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip compareMode={compareMode} />} />
           <ReferenceLine
             y={sustainablePace}
             stroke="#58a6ff"
@@ -93,24 +108,59 @@ const PaceChart = ({ splits, sustainablePace }) => {
               fontSize: 11,
             }}
           />
+
+          {/* Comparison lines (rendered first so main line is on top) */}
+          {compareMode && (
+            <>
+              <Line
+                type="monotone"
+                dataKey="aggressive"
+                name="Aggressive (−10s)"
+                stroke={COLORS.aggressive}
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="conservative"
+                name="Conservative (+10s)"
+                stroke={COLORS.conservative}
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+              />
+            </>
+          )}
+
+          {/* Main line */}
           <Line
             type="monotone"
             dataKey="pace"
-            stroke="url(#paceGradient)"
+            name="Current"
+            stroke={COLORS.main}
             strokeWidth={3}
             dot={{
               fill: '#1c2128',
-              stroke: '#fc4c02',
+              stroke: COLORS.main,
               strokeWidth: 2,
               r: 4,
             }}
             activeDot={{
-              fill: '#fc4c02',
+              fill: COLORS.main,
               stroke: '#fff',
               strokeWidth: 2,
               r: 6,
             }}
           />
+
+          {compareMode && (
+            <Legend
+              wrapperStyle={{ paddingTop: '10px' }}
+              iconType="line"
+              formatter={(value) => <span style={{ color: '#8b949e', fontSize: '12px' }}>{value}</span>}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </div>

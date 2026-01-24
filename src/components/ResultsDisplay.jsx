@@ -34,6 +34,26 @@ const FadeRiskIndicator = ({ fadeRisk }) => (
   </div>
 );
 
+const ComparisonSummary = ({ main, comparisons }) => (
+  <div className="comparison-summary">
+    <div className="comparison-row aggressive">
+      <span className="scenario-label">Aggressive (−10s/mi)</span>
+      <span className="scenario-time">{secondsToTime(comparisons.aggressive.projectedFinishTime)}</span>
+      <span className="scenario-risk">{comparisons.aggressive.fadeRisk.level.replace('-', ' ')}</span>
+    </div>
+    <div className="comparison-row current">
+      <span className="scenario-label">Current</span>
+      <span className="scenario-time">{secondsToTime(main.projectedFinishTime)}</span>
+      <span className="scenario-risk">{main.fadeRisk.level.replace('-', ' ')}</span>
+    </div>
+    <div className="comparison-row conservative">
+      <span className="scenario-label">Conservative (+10s/mi)</span>
+      <span className="scenario-time">{secondsToTime(comparisons.conservative.projectedFinishTime)}</span>
+      <span className="scenario-risk">{comparisons.conservative.fadeRisk.level.replace('-', ' ')}</span>
+    </div>
+  </div>
+);
+
 const SplitTable = ({ splits }) => (
   <table className="split-table">
     <thead>
@@ -65,7 +85,7 @@ const SplitTable = ({ splits }) => (
   </table>
 );
 
-const ResultsDisplay = ({ projection }) => {
+const ResultsDisplay = ({ projection, comparisons }) => {
   if (!projection) {
     return (
       <div className="panel">
@@ -80,7 +100,14 @@ const ResultsDisplay = ({ projection }) => {
       <h2>Projected Splits</h2>
       <Summary projection={projection} />
       <FadeRiskIndicator fadeRisk={projection.fadeRisk} />
-      <PaceChart splits={projection.splits} sustainablePace={projection.sustainablePace} />
+      <PaceChart
+        splits={projection.splits}
+        sustainablePace={projection.sustainablePace}
+        comparisons={comparisons}
+      />
+      {comparisons && (
+        <ComparisonSummary main={projection} comparisons={comparisons} />
+      )}
       <SplitTable splits={projection.splits} />
     </div>
   );

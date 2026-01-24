@@ -95,6 +95,15 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
             : `${inputs.pacingAdjustment} sec/mile slower`}
         </div>
       </div>
+
+      <label className="compare-toggle">
+        <input
+          type="checkbox"
+          checked={inputs.compareMode}
+          onChange={(e) => handleChange('compareMode')(e.target.checked)}
+        />
+        <span>Compare ±10 sec/mile scenarios</span>
+      </label>
     </div>
   );
 };

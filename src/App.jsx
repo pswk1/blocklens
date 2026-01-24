@@ -9,12 +9,15 @@ const DEFAULT_INPUTS = {
   recentRace: 'half',
   recentTime: '1:40:00',
   pacingAdjustment: 0,
+  compareMode: false,
 };
+
+const COMPARE_OFFSET = 10; // seconds per mile
 
 const App = () => {
   const [inputs, setInputs] = useState(DEFAULT_INPUTS);
 
-  const projection = useMemo(() => {
+  const projections = useMemo(() => {
     const goalTimeSeconds = timeToSeconds(inputs.goalTime);
     const recentTimeSeconds = timeToSeconds(inputs.recentTime);
 
@@ -22,13 +25,37 @@ const App = () => {
       return null;
     }
 
-    return calculateProjection({
+    const baseParams = {
       goalRace: inputs.goalRace,
       goalTimeSeconds,
       recentRace: inputs.recentRace,
       recentTimeSeconds,
+    };
+
+    const main = calculateProjection({
+      ...baseParams,
       pacingAdjustment: inputs.pacingAdjustment,
     });
+
+    if (!inputs.compareMode) {
+      return { main, comparisons: null };
+    }
+
+    // Generate comparison scenarios: more aggressive and more conservative
+    const aggressive = calculateProjection({
+      ...baseParams,
+      pacingAdjustment: inputs.pacingAdjustment - COMPARE_OFFSET,
+    });
+
+    const conservative = calculateProjection({
+      ...baseParams,
+      pacingAdjustment: inputs.pacingAdjustment + COMPARE_OFFSET,
+    });
+
+    return {
+      main,
+      comparisons: { aggressive, conservative },
+    };
   }, [inputs]);
 
   return (
@@ -36,7 +63,11 @@ const App = () => {
       <h1 className="app-title">BlockLens</h1>
       <div className="panels">
         <RaceInputForm inputs={inputs} onInputChange={setInputs} />
-        <ResultsDisplay projection={projection} />
+        <ResultsDisplay
+          projection={projections?.main}
+          comparisons={projections?.comparisons}
+          compareMode={inputs.compareMode}
+        />
       </div>
     </div>
   );

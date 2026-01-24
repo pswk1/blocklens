@@ -404,3 +404,90 @@ h1, h2, h3 {
 .tooltip-row.fade span:last-child {
   color: var(--accent-primary);
 }
+
+/* Compare toggle */
+.compare-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.compare-toggle:hover {
+  border-color: var(--accent-primary);
+}
+
+.compare-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.compare-toggle span {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Comparison summary */
+.comparison-summary {
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.comparison-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-row:last-child {
+  border-bottom: none;
+}
+
+.comparison-row.current {
+  background: var(--bg-secondary);
+}
+
+.scenario-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.comparison-row.aggressive .scenario-label {
+  color: #f85149;
+}
+
+.comparison-row.current .scenario-label {
+  color: var(--accent-primary);
+}
+
+.comparison-row.conservative .scenario-label {
+  color: #3fb950;
+}
+
+.scenario-time {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.scenario-risk {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: right;
+}
