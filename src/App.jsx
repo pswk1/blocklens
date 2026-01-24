@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import RaceInputForm from './components/RaceInputForm.jsx';
 import ResultsDisplay from './components/ResultsDisplay.jsx';
 import { timeToSeconds, calculateProjection } from './utils/calculations.js';
+
+const STORAGE_KEY = 'blocklens-inputs';
 
 const DEFAULT_INPUTS = {
   goalRace: 'marathon',
@@ -14,8 +16,31 @@ const DEFAULT_INPUTS = {
 
 const COMPARE_OFFSET = 10; // seconds per mile
 
+const loadSavedInputs = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge with defaults to handle any new fields
+      return { ...DEFAULT_INPUTS, ...parsed };
+    }
+  } catch (e) {
+    // Ignore localStorage errors
+  }
+  return DEFAULT_INPUTS;
+};
+
 const App = () => {
-  const [inputs, setInputs] = useState(DEFAULT_INPUTS);
+  const [inputs, setInputs] = useState(loadSavedInputs);
+
+  // Save to localStorage whenever inputs change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  }, [inputs]);
 
   const projections = useMemo(() => {
     const goalTimeSeconds = timeToSeconds(inputs.goalTime);
