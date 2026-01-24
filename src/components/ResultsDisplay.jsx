@@ -55,7 +55,8 @@ const ComparisonSummary = ({ main, comparisons }) => (
 );
 
 const SplitTable = ({ splits }) => (
-  <table className="split-table">
+  <div className="split-table-wrapper">
+    <table className="split-table">
     <thead>
       <tr>
         <th>Mile</th>
@@ -83,6 +84,7 @@ const SplitTable = ({ splits }) => (
       ))}
     </tbody>
   </table>
+  </div>
 );
 
 const ResultsDisplay = ({ projection, comparisons }) => {
