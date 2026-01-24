@@ -6,18 +6,72 @@ import {
 } from './constants.js';
 
 /**
- * Convert time string (MM:SS or HH:MM:SS) to total seconds
+ * Validate and parse time string (MM:SS or HH:MM:SS)
+ * Returns { valid: true, seconds } or { valid: false, error }
  */
-export function timeToSeconds(timeStr) {
-  const parts = timeStr.split(':').map(Number);
+export const validateTimeString = (timeStr) => {
+  if (!timeStr || typeof timeStr !== 'string') {
+    return { valid: false, error: 'Enter a time' };
+  }
+
+  const trimmed = timeStr.trim();
+  if (!trimmed) {
+    return { valid: false, error: 'Enter a time' };
+  }
+
+  // Check format: should be digits and colons only
+  if (!/^[\d:]+$/.test(trimmed)) {
+    return { valid: false, error: 'Use format M:SS or H:MM:SS' };
+  }
+
+  const parts = trimmed.split(':');
+  if (parts.length < 2 || parts.length > 3) {
+    return { valid: false, error: 'Use format M:SS or H:MM:SS' };
+  }
+
+  // Check each part is a valid number
+  const nums = parts.map(Number);
+  if (nums.some((n) => isNaN(n) || n < 0)) {
+    return { valid: false, error: 'Invalid number in time' };
+  }
+
+  // Validate ranges
   if (parts.length === 2) {
-    return parts[0] * 60 + parts[1];
+    const [minutes, seconds] = nums;
+    if (seconds >= 60) {
+      return { valid: false, error: 'Seconds must be 0-59' };
+    }
+    if (minutes === 0 && seconds === 0) {
+      return { valid: false, error: 'Time must be greater than 0' };
+    }
+    return { valid: true, seconds: minutes * 60 + seconds };
   }
+
   if (parts.length === 3) {
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    const [hours, minutes, seconds] = nums;
+    if (minutes >= 60) {
+      return { valid: false, error: 'Minutes must be 0-59' };
+    }
+    if (seconds >= 60) {
+      return { valid: false, error: 'Seconds must be 0-59' };
+    }
+    if (hours === 0 && minutes === 0 && seconds === 0) {
+      return { valid: false, error: 'Time must be greater than 0' };
+    }
+    return { valid: true, seconds: hours * 3600 + minutes * 60 + seconds };
   }
-  return 0;
-}
+
+  return { valid: false, error: 'Use format M:SS or H:MM:SS' };
+};
+
+/**
+ * Convert time string (MM:SS or HH:MM:SS) to total seconds
+ * Returns 0 for invalid input (use validateTimeString for validation)
+ */
+export const timeToSeconds = (timeStr) => {
+  const result = validateTimeString(timeStr);
+  return result.valid ? result.seconds : 0;
+};
 
 /**
  * Convert total seconds to formatted time string (H:MM:SS or M:SS)

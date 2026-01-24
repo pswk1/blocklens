@@ -1,14 +1,16 @@
 import { RACE_DISTANCES } from '../utils/constants.js';
+import { validateTimeString } from '../utils/calculations.js';
 
-const TimeInput = ({ label, value, onChange }) => (
-  <div className="form-group">
+const TimeInput = ({ label, value, onChange, error }) => (
+  <div className={`form-group ${error ? 'has-error' : ''}`}>
     <label>{label}</label>
     <input
       type="text"
-      placeholder="H:MM:SS or MM:SS"
+      placeholder="M:SS or H:MM:SS"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
+    {error && <div className="error-message">{error}</div>}
   </div>
 );
 
@@ -30,6 +32,18 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
     onInputChange({ ...inputs, [field]: value });
   };
 
+  // Validate time inputs
+  const goalTimeValidation = validateTimeString(inputs.goalTime);
+  const recentTimeValidation = validateTimeString(inputs.recentTime);
+
+  // Only show errors if user has typed something
+  const goalTimeError = inputs.goalTime && !goalTimeValidation.valid
+    ? goalTimeValidation.error
+    : null;
+  const recentTimeError = inputs.recentTime && !recentTimeValidation.valid
+    ? recentTimeValidation.error
+    : null;
+
   return (
     <div className="panel">
       <h2>Race Setup</h2>
@@ -44,6 +58,7 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
           label="Goal Time"
           value={inputs.goalTime}
           onChange={handleChange('goalTime')}
+          error={goalTimeError}
         />
       </div>
 
@@ -57,6 +72,7 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
           label="Recent Time"
           value={inputs.recentTime}
           onChange={handleChange('recentTime')}
+          error={recentTimeError}
         />
       </div>
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  validateTimeString,
   timeToSeconds,
   secondsToTime,
   formatPace,
@@ -10,6 +11,47 @@ import {
   assessFadeRisk,
   calculateProjection,
 } from './calculations.js';
+
+describe('validateTimeString', () => {
+  it('validates correct MM:SS format', () => {
+    const result = validateTimeString('5:30');
+    expect(result.valid).toBe(true);
+    expect(result.seconds).toBe(330);
+  });
+
+  it('validates correct HH:MM:SS format', () => {
+    const result = validateTimeString('1:30:00');
+    expect(result.valid).toBe(true);
+    expect(result.seconds).toBe(5400);
+  });
+
+  it('rejects empty input', () => {
+    expect(validateTimeString('').valid).toBe(false);
+    expect(validateTimeString(null).valid).toBe(false);
+  });
+
+  it('rejects invalid characters', () => {
+    expect(validateTimeString('5:3a').valid).toBe(false);
+    expect(validateTimeString('abc').valid).toBe(false);
+  });
+
+  it('rejects seconds >= 60', () => {
+    const result = validateTimeString('5:75');
+    expect(result.valid).toBe(false);
+    expect(result.error).toBe('Seconds must be 0-59');
+  });
+
+  it('rejects minutes >= 60 in HH:MM:SS', () => {
+    const result = validateTimeString('1:65:00');
+    expect(result.valid).toBe(false);
+    expect(result.error).toBe('Minutes must be 0-59');
+  });
+
+  it('rejects zero time', () => {
+    expect(validateTimeString('0:00').valid).toBe(false);
+    expect(validateTimeString('0:00:00').valid).toBe(false);
+  });
+});
 
 describe('timeToSeconds', () => {
   it('converts MM:SS format', () => {
