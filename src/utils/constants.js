@@ -1,4 +1,10 @@
 /**
+ * Unit conversion constants
+ */
+export const MILES_TO_KM = 1.60934;
+export const KM_TO_MILES = 0.621371;
+
+/**
  * Race distances with display names and values in miles
  */
 export const RACE_DISTANCES = {

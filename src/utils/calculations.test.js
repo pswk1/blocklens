@@ -4,6 +4,10 @@ import {
   timeToSeconds,
   secondsToTime,
   formatPace,
+  paceToKm,
+  milesToKm,
+  formatPaceWithUnit,
+  formatDistance,
   predictRaceTime,
   calculateSustainablePace,
   calculateFadeAdjustment,
@@ -81,6 +85,55 @@ describe('formatPace', () => {
   it('formats pace as M:SS', () => {
     expect(formatPace(480)).toBe('8:00');
     expect(formatPace(445)).toBe('7:25');
+  });
+});
+
+describe('unit conversions', () => {
+  describe('paceToKm', () => {
+    it('converts pace from /mile to /km', () => {
+      // 8:00/mile = ~4:58/km (480 / 1.60934 = 298.26)
+      const result = paceToKm(480);
+      expect(result).toBeCloseTo(298.26, 0);
+    });
+
+    it('converts faster pace correctly', () => {
+      // 6:00/mile = ~3:44/km
+      const result = paceToKm(360);
+      expect(result).toBeCloseTo(223.7, 0);
+    });
+  });
+
+  describe('milesToKm', () => {
+    it('converts miles to kilometers', () => {
+      expect(milesToKm(1)).toBeCloseTo(1.60934, 2);
+      expect(milesToKm(26.2)).toBeCloseTo(42.16, 1);
+    });
+
+    it('converts half marathon distance', () => {
+      expect(milesToKm(13.1)).toBeCloseTo(21.08, 1);
+    });
+  });
+
+  describe('formatPaceWithUnit', () => {
+    it('formats pace in miles', () => {
+      expect(formatPaceWithUnit(480, 'miles')).toBe('8:00/mi');
+    });
+
+    it('formats pace in km', () => {
+      const result = formatPaceWithUnit(480, 'km');
+      expect(result).toMatch(/^\d:\d{2}\/km$/);
+      expect(result).toBe('4:58/km');
+    });
+  });
+
+  describe('formatDistance', () => {
+    it('formats distance in miles', () => {
+      expect(formatDistance(26.2, 'miles')).toBe('26.2');
+    });
+
+    it('formats distance in km', () => {
+      expect(formatDistance(26.2, 'km')).toBe('42.2');
+    });
   });
 });
 

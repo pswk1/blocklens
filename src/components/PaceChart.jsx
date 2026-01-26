@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { formatPace } from '../utils/calculations.js';
+import { formatPaceWithUnit, paceToKm, milesToKm } from '../utils/calculations.js';
 
 const COLORS = {
   main: '#fc4c02',
@@ -17,28 +17,34 @@ const COLORS = {
   conservative: '#3fb950',
 };
 
-const CustomTooltip = ({ active, payload, label, compareMode }) => {
+const CustomTooltip = ({ active, payload, label, compareMode, unit }) => {
   if (!active || !payload || !payload.length) {
     return null;
   }
 
+  const distanceLabel = unit === 'km'
+    ? `${milesToKm(label).toFixed(1)} km`
+    : `Mile ${label}`;
+
   return (
     <div className="chart-tooltip">
-      <div className="tooltip-title">Mile {label}</div>
+      <div className="tooltip-title">{distanceLabel}</div>
       {payload.map((entry) => (
         <div key={entry.dataKey} className="tooltip-row">
           <span style={{ color: entry.color }}>
             {compareMode ? entry.name : 'Pace'}:
           </span>
-          <span>{formatPace(entry.value)}/mi</span>
+          <span>{formatPaceWithUnit(entry.value, unit)}</span>
         </div>
       ))}
     </div>
   );
 };
 
-const PaceChart = ({ splits, sustainablePace, comparisons }) => {
+const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }) => {
   const compareMode = !!comparisons;
+  const unitLabel = unit === 'km' ? 'km' : 'mi';
+  const offsetLabel = unit === 'km' ? '6s' : '10s';
 
   // Build chart data with all scenarios
   const chartData = splits.map((split, i) => {
@@ -72,7 +78,21 @@ const PaceChart = ({ splits, sustainablePace, comparisons }) => {
   const yMin = Math.floor((minPace - padding) / 5) * 5;
   const yMax = Math.ceil((maxPace + padding) / 5) * 5;
 
-  const formatYAxis = (value) => formatPace(value);
+  // Format Y-axis based on unit
+  const formatYAxis = (value) => {
+    const pace = unit === 'km' ? paceToKm(value) : value;
+    const minutes = Math.floor(pace / 60);
+    const seconds = Math.round(pace % 60);
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  // Format X-axis based on unit
+  const formatXAxis = (mile) => {
+    if (unit === 'km') {
+      return milesToKm(mile).toFixed(1);
+    }
+    return mile;
+  };
 
   return (
     <div className="pace-chart">
@@ -82,6 +102,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons }) => {
           <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
           <XAxis
             dataKey="mile"
+            tickFormatter={formatXAxis}
             tick={{ fill: '#8b949e', fontSize: 12 }}
             axisLine={{ stroke: '#30363d' }}
             tickLine={{ stroke: '#30363d' }}
@@ -95,7 +116,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons }) => {
             width={50}
             reversed
           />
-          <Tooltip content={<CustomTooltip compareMode={compareMode} />} />
+          <Tooltip content={<CustomTooltip compareMode={compareMode} unit={unit} />} />
           <ReferenceLine
             y={sustainablePace}
             stroke="#58a6ff"
@@ -115,7 +136,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons }) => {
               <Line
                 type="monotone"
                 dataKey="aggressive"
-                name="Aggressive (−10s)"
+                name={`Aggressive (−${offsetLabel}/${unitLabel})`}
                 stroke={COLORS.aggressive}
                 strokeWidth={2}
                 strokeDasharray="4 4"
@@ -124,7 +145,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons }) => {
               <Line
                 type="monotone"
                 dataKey="conservative"
-                name="Conservative (+10s)"
+                name={`Conservative (+${offsetLabel}/${unitLabel})`}
                 stroke={COLORS.conservative}
                 strokeWidth={2}
                 strokeDasharray="4 4"

@@ -475,6 +475,46 @@ h1, h2, h3 {
   color: var(--accent-primary);
 }
 
+/* Unit toggle */
+.unit-toggle {
+  display: flex;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.unit-btn {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  background: var(--bg-secondary);
+  border: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.unit-btn:first-child {
+  border-right: 1px solid var(--border-color);
+}
+
+.unit-btn:hover {
+  background: var(--bg-elevated);
+}
+
+.unit-btn.active {
+  background: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.unit-btn:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgba(252, 76, 2, 0.5);
+}
+
 /* Compare toggle */
 .compare-toggle {
   display: flex;

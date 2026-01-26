@@ -3,6 +3,7 @@ import {
   RIEGEL_EXPONENT,
   FADE_MODEL,
   RISK_THRESHOLDS,
+  MILES_TO_KM,
 } from './constants.js';
 
 /**
@@ -95,6 +96,38 @@ export function formatPace(secondsPerMile) {
   const seconds = Math.round(secondsPerMile % 60);
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
+
+/**
+ * Convert pace from seconds/mile to seconds/km
+ */
+export const paceToKm = (secondsPerMile) => secondsPerMile / MILES_TO_KM;
+
+/**
+ * Convert distance from miles to km
+ */
+export const milesToKm = (miles) => miles * MILES_TO_KM;
+
+/**
+ * Format pace with unit label
+ * @param {number} secondsPerMile - Pace in seconds per mile (internal unit)
+ * @param {string} unit - 'miles' or 'km'
+ * @returns {string} Formatted pace like "8:00/mi" or "4:58/km"
+ */
+export const formatPaceWithUnit = (secondsPerMile, unit) => {
+  const pace = unit === 'km' ? paceToKm(secondsPerMile) : secondsPerMile;
+  return `${formatPace(pace)}/${unit === 'km' ? 'km' : 'mi'}`;
+};
+
+/**
+ * Format distance in selected unit
+ * @param {number} miles - Distance in miles (internal unit)
+ * @param {string} unit - 'miles' or 'km'
+ * @returns {string} Formatted distance
+ */
+export const formatDistance = (miles, unit) => {
+  const distance = unit === 'km' ? milesToKm(miles) : miles;
+  return distance.toFixed(1);
+};
 
 /**
  * Riegel formula: predict race time for a new distance based on a known performance

@@ -1,5 +1,24 @@
-import { RACE_DISTANCES } from '../utils/constants.js';
+import { RACE_DISTANCES, MILES_TO_KM } from '../utils/constants.js';
 import { validateTimeString } from '../utils/calculations.js';
+
+const UnitToggle = ({ value, onChange }) => (
+  <div className="unit-toggle">
+    <button
+      type="button"
+      className={`unit-btn ${value === 'miles' ? 'active' : ''}`}
+      onClick={() => onChange('miles')}
+    >
+      Miles
+    </button>
+    <button
+      type="button"
+      className={`unit-btn ${value === 'km' ? 'active' : ''}`}
+      onClick={() => onChange('km')}
+    >
+      Kilometers
+    </button>
+  </div>
+);
 
 const TimeInput = ({ label, value, onChange, error }) => (
   <div className={`form-group ${error ? 'has-error' : ''}`}>
@@ -44,8 +63,20 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
     ? recentTimeValidation.error
     : null;
 
+  // Unit label for display
+  const unitLabel = inputs.unitPreference === 'km' ? 'km' : 'mi';
+
+  // Convert sec/mile adjustment to sec/km for display when in km mode
+  const displayAdjustment = inputs.unitPreference === 'km'
+    ? Math.round(Math.abs(inputs.pacingAdjustment) / MILES_TO_KM)
+    : Math.abs(inputs.pacingAdjustment);
+
   return (
     <div className="panel">
+      <UnitToggle
+        value={inputs.unitPreference}
+        onChange={handleChange('unitPreference')}
+      />
       <h2>Race Setup</h2>
 
       <div className="form-row">
@@ -78,7 +109,7 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
 
       <div className="form-group">
         <label>
-          Pacing Adjustment (sec/mile from sustainable)
+          Pacing Adjustment (sec/{unitLabel} from sustainable)
         </label>
         <input
           type="range"
@@ -91,8 +122,8 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
           {inputs.pacingAdjustment === 0
             ? 'Even (sustainable pace)'
             : inputs.pacingAdjustment < 0
-            ? `${Math.abs(inputs.pacingAdjustment)} sec/mile faster`
-            : `${inputs.pacingAdjustment} sec/mile slower`}
+            ? `${displayAdjustment} sec/${unitLabel} faster`
+            : `${displayAdjustment} sec/${unitLabel} slower`}
         </div>
       </div>
 
@@ -102,7 +133,7 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
           checked={inputs.compareMode}
           onChange={(e) => handleChange('compareMode')(e.target.checked)}
         />
-        <span>Compare ±10 sec/mile scenarios</span>
+        <span>Compare ±{inputs.unitPreference === 'km' ? '6' : '10'} sec/{unitLabel} scenarios</span>
       </label>
     </div>
   );

@@ -12,6 +12,7 @@ const DEFAULT_INPUTS = {
   recentTime: '1:40:00',
   pacingAdjustment: 0,
   compareMode: false,
+  unitPreference: 'miles',
 };
 
 const COMPARE_OFFSET = 10; // seconds per mile
@@ -92,6 +93,7 @@ const App = () => {
           projection={projections?.main}
           comparisons={projections?.comparisons}
           compareMode={inputs.compareMode}
+          unit={inputs.unitPreference}
         />
       </div>
     </div>
