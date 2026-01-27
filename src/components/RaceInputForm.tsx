@@ -1,7 +1,13 @@
-import { RACE_DISTANCES, MILES_TO_KM } from '../utils/constants.js';
-import { validateTimeString } from '../utils/calculations.js';
+import { RACE_DISTANCES, MILES_TO_KM } from '../utils/constants';
+import { validateTimeString } from '../utils/calculations';
+import type { AppInputs, UnitPreference, RaceKey } from '../types';
 
-const UnitToggle = ({ value, onChange }) => (
+interface UnitToggleProps {
+  value: UnitPreference;
+  onChange: (unit: UnitPreference) => void;
+}
+
+const UnitToggle = ({ value, onChange }: UnitToggleProps) => (
   <div className="unit-toggle">
     <button
       type="button"
@@ -20,7 +26,14 @@ const UnitToggle = ({ value, onChange }) => (
   </div>
 );
 
-const TimeInput = ({ label, value, onChange, error }) => (
+interface TimeInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error: string | null;
+}
+
+const TimeInput = ({ label, value, onChange, error }: TimeInputProps) => (
   <div className={`form-group ${error ? 'has-error' : ''}`}>
     <label>{label}</label>
     <input
@@ -33,11 +46,17 @@ const TimeInput = ({ label, value, onChange, error }) => (
   </div>
 );
 
-const RaceSelect = ({ label, value, onChange }) => (
+interface RaceSelectProps {
+  label: string;
+  value: RaceKey;
+  onChange: (race: RaceKey) => void;
+}
+
+const RaceSelect = ({ label, value, onChange }: RaceSelectProps) => (
   <div className="form-group">
     <label>{label}</label>
-    <select value={value} onChange={(e) => onChange(e.target.value)}>
-      {Object.entries(RACE_DISTANCES).map(([key, race]) => (
+    <select value={value} onChange={(e) => onChange(e.target.value as RaceKey)}>
+      {(Object.entries(RACE_DISTANCES) as [RaceKey, { label: string; miles: number; km: number }][]).map(([key, race]) => (
         <option key={key} value={key}>
           {race.label}
         </option>
@@ -46,8 +65,13 @@ const RaceSelect = ({ label, value, onChange }) => (
   </div>
 );
 
-const RaceInputForm = ({ inputs, onInputChange }) => {
-  const handleChange = (field) => (value) => {
+interface RaceInputFormProps {
+  inputs: AppInputs;
+  onInputChange: (inputs: AppInputs) => void;
+}
+
+const RaceInputForm = ({ inputs, onInputChange }: RaceInputFormProps) => {
+  const handleChange = <K extends keyof AppInputs>(field: K) => (value: AppInputs[K]) => {
     onInputChange({ ...inputs, [field]: value });
   };
 
@@ -57,10 +81,10 @@ const RaceInputForm = ({ inputs, onInputChange }) => {
 
   // Only show errors if user has typed something
   const goalTimeError = inputs.goalTime && !goalTimeValidation.valid
-    ? goalTimeValidation.error
+    ? goalTimeValidation.error ?? null
     : null;
   const recentTimeError = inputs.recentTime && !recentTimeValidation.valid
-    ? recentTimeValidation.error
+    ? recentTimeValidation.error ?? null
     : null;
 
   // Unit label for display

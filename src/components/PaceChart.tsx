@@ -9,16 +9,32 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { formatPaceWithUnit, paceToKm, milesToKm } from '../utils/calculations.js';
+import { formatPaceWithUnit, paceToKm, milesToKm } from '../utils/calculations';
+import type { Split, ComparableProjections, UnitPreference } from '../types';
 
 const COLORS = {
   main: '#fc4c02',
   aggressive: '#f85149',
   conservative: '#3fb950',
-};
+} as const;
 
-const CustomTooltip = ({ active, payload, label, compareMode, unit }) => {
-  if (!active || !payload || !payload.length) {
+interface TooltipPayloadItem {
+  dataKey: string;
+  value: number;
+  name: string;
+  color: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  label?: number;
+  compareMode: boolean;
+  unit: UnitPreference;
+}
+
+const CustomTooltip = ({ active, payload, label, compareMode, unit }: CustomTooltipProps) => {
+  if (!active || !payload || !payload.length || label === undefined) {
     return null;
   }
 
@@ -41,14 +57,28 @@ const CustomTooltip = ({ active, payload, label, compareMode, unit }) => {
   );
 };
 
-const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }) => {
+interface ChartDataPoint {
+  mile: number;
+  pace: number;
+  aggressive?: number;
+  conservative?: number;
+}
+
+interface PaceChartProps {
+  splits: Split[];
+  sustainablePace: number;
+  comparisons: ComparableProjections | null;
+  unit?: UnitPreference;
+}
+
+const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }: PaceChartProps) => {
   const compareMode = !!comparisons;
   const unitLabel = unit === 'km' ? 'km' : 'mi';
   const offsetLabel = unit === 'km' ? '6s' : '10s';
 
   // Build chart data with all scenarios
-  const chartData = splits.map((split, i) => {
-    const data = {
+  const chartData: ChartDataPoint[] = splits.map((split, i) => {
+    const data: ChartDataPoint = {
       mile: split.mile,
       pace: split.pace,
     };
@@ -62,7 +92,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }) => 
   });
 
   // Calculate Y-axis domain across all scenarios
-  const allPaces = [
+  const allPaces: number[] = [
     ...splits.map((s) => s.pace),
     sustainablePace,
   ];
@@ -79,7 +109,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }) => 
   const yMax = Math.ceil((maxPace + padding) / 5) * 5;
 
   // Format Y-axis based on unit
-  const formatYAxis = (value) => {
+  const formatYAxis = (value: number): string => {
     const pace = unit === 'km' ? paceToKm(value) : value;
     const minutes = Math.floor(pace / 60);
     const seconds = Math.round(pace % 60);
@@ -87,11 +117,11 @@ const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }) => 
   };
 
   // Format X-axis based on unit
-  const formatXAxis = (mile) => {
+  const formatXAxis = (mile: number): string => {
     if (unit === 'km') {
       return milesToKm(mile).toFixed(1);
     }
-    return mile;
+    return String(mile);
   };
 
   return (
@@ -179,7 +209,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }) => 
             <Legend
               wrapperStyle={{ paddingTop: '10px' }}
               iconType="line"
-              formatter={(value) => <span style={{ color: '#8b949e', fontSize: '12px' }}>{value}</span>}
+              formatter={(value: string) => <span style={{ color: '#8b949e', fontSize: '12px' }}>{value}</span>}
             />
           )}
         </LineChart>

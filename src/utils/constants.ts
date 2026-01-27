@@ -1,13 +1,15 @@
+import type { RaceKey, RaceDistance, FadeModelConfig, RiskThresholds } from '../types';
+
 /**
  * Unit conversion constants
  */
-export const MILES_TO_KM = 1.60934;
-export const KM_TO_MILES = 0.621371;
+export const MILES_TO_KM: number = 1.60934;
+export const KM_TO_MILES: number = 0.621371;
 
 /**
  * Race distances with display names and values in miles
  */
-export const RACE_DISTANCES = {
+export const RACE_DISTANCES: Record<RaceKey, RaceDistance> = {
   '5k': { label: '5K', miles: 3.1, km: 5 },
   '10k': { label: '10K', miles: 6.2, km: 10 },
   'half': { label: 'Half Marathon', miles: 13.1, km: 21.1 },
@@ -18,13 +20,13 @@ export const RACE_DISTANCES = {
  * Riegel exponent - standard value for predicting race times across distances
  * Higher values = more fatigue penalty for longer distances
  */
-export const RIEGEL_EXPONENT = 1.06;
+export const RIEGEL_EXPONENT: number = 1.06;
 
 /**
  * Fade model constants
  * These control how aggressively pace deviation compounds into late-race slowdown
  */
-export const FADE_MODEL = {
+export const FADE_MODEL: FadeModelConfig = {
   // How much each second/mile too fast compounds (e.g., 1.5 = 50% penalty)
   AGGRESSION_MULTIPLIER: 1.5,
   // Point in race (as fraction) where fade begins to accelerate
@@ -37,7 +39,7 @@ export const FADE_MODEL = {
  * Risk thresholds for the fade risk indicator
  * Based on seconds/mile faster than sustainable pace
  */
-export const RISK_THRESHOLDS = {
+export const RISK_THRESHOLDS: RiskThresholds = {
   LOW: 5,      // 0-5 sec/mile fast = low risk
   MODERATE: 15, // 6-15 sec/mile fast = moderate risk
   HIGH: 25,    // 16-25 sec/mile fast = high risk

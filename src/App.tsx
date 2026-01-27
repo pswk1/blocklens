@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
-import RaceInputForm from './components/RaceInputForm.jsx';
-import ResultsDisplay from './components/ResultsDisplay.jsx';
-import { timeToSeconds, calculateProjection } from './utils/calculations.js';
+import RaceInputForm from './components/RaceInputForm';
+import ResultsDisplay from './components/ResultsDisplay';
+import { timeToSeconds, calculateProjection } from './utils/calculations';
+import type { AppInputs, ProjectionResult, ComparableProjections } from './types';
 
 const STORAGE_KEY = 'blocklens-inputs';
 
-const DEFAULT_INPUTS = {
+const DEFAULT_INPUTS: AppInputs = {
   goalRace: 'marathon',
   goalTime: '3:30:00',
   recentRace: 'half',
@@ -17,33 +18,38 @@ const DEFAULT_INPUTS = {
 
 const COMPARE_OFFSET = 10; // seconds per mile
 
-const loadSavedInputs = () => {
+const loadSavedInputs = (): AppInputs => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
+      const parsed: Partial<AppInputs> = JSON.parse(saved);
       // Merge with defaults to handle any new fields
       return { ...DEFAULT_INPUTS, ...parsed };
     }
-  } catch (e) {
+  } catch {
     // Ignore localStorage errors
   }
   return DEFAULT_INPUTS;
 };
 
+interface AppProjections {
+  main: ProjectionResult;
+  comparisons: ComparableProjections | null;
+}
+
 const App = () => {
-  const [inputs, setInputs] = useState(loadSavedInputs);
+  const [inputs, setInputs] = useState<AppInputs>(loadSavedInputs);
 
   // Save to localStorage whenever inputs change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
-    } catch (e) {
+    } catch {
       // Ignore localStorage errors
     }
   }, [inputs]);
 
-  const projections = useMemo(() => {
+  const projections = useMemo<AppProjections | null>(() => {
     const goalTimeSeconds = timeToSeconds(inputs.goalTime);
     const recentTimeSeconds = timeToSeconds(inputs.recentTime);
 
@@ -90,8 +96,8 @@ const App = () => {
       <div className="panels">
         <RaceInputForm inputs={inputs} onInputChange={setInputs} />
         <ResultsDisplay
-          projection={projections?.main}
-          comparisons={projections?.comparisons}
+          projection={projections?.main ?? null}
+          comparisons={projections?.comparisons ?? null}
           compareMode={inputs.compareMode}
           unit={inputs.unitPreference}
         />

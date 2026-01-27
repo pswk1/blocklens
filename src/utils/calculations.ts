@@ -4,13 +4,22 @@ import {
   FADE_MODEL,
   RISK_THRESHOLDS,
   MILES_TO_KM,
-} from './constants.js';
+} from './constants';
+import type {
+  RaceKey,
+  UnitPreference,
+  Split,
+  FadeRiskAssessment,
+  ProjectionResult,
+  ProjectionInputs,
+  ValidationResult,
+} from '../types';
 
 /**
  * Validate and parse time string (MM:SS or HH:MM:SS)
  * Returns { valid: true, seconds } or { valid: false, error }
  */
-export const validateTimeString = (timeStr) => {
+export const validateTimeString = (timeStr: string | null | undefined): ValidationResult => {
   if (!timeStr || typeof timeStr !== 'string') {
     return { valid: false, error: 'Enter a time' };
   }
@@ -69,15 +78,15 @@ export const validateTimeString = (timeStr) => {
  * Convert time string (MM:SS or HH:MM:SS) to total seconds
  * Returns 0 for invalid input (use validateTimeString for validation)
  */
-export const timeToSeconds = (timeStr) => {
+export const timeToSeconds = (timeStr: string): number => {
   const result = validateTimeString(timeStr);
-  return result.valid ? result.seconds : 0;
+  return result.valid && result.seconds !== undefined ? result.seconds : 0;
 };
 
 /**
  * Convert total seconds to formatted time string (H:MM:SS or M:SS)
  */
-export function secondsToTime(totalSeconds) {
+export function secondsToTime(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = Math.round(totalSeconds % 60);
@@ -91,7 +100,7 @@ export function secondsToTime(totalSeconds) {
 /**
  * Format pace as M:SS per mile
  */
-export function formatPace(secondsPerMile) {
+export function formatPace(secondsPerMile: number): string {
   const minutes = Math.floor(secondsPerMile / 60);
   const seconds = Math.round(secondsPerMile % 60);
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
@@ -100,31 +109,31 @@ export function formatPace(secondsPerMile) {
 /**
  * Convert pace from seconds/mile to seconds/km
  */
-export const paceToKm = (secondsPerMile) => secondsPerMile / MILES_TO_KM;
+export const paceToKm = (secondsPerMile: number): number => secondsPerMile / MILES_TO_KM;
 
 /**
  * Convert distance from miles to km
  */
-export const milesToKm = (miles) => miles * MILES_TO_KM;
+export const milesToKm = (miles: number): number => miles * MILES_TO_KM;
 
 /**
  * Format pace with unit label
- * @param {number} secondsPerMile - Pace in seconds per mile (internal unit)
- * @param {string} unit - 'miles' or 'km'
- * @returns {string} Formatted pace like "8:00/mi" or "4:58/km"
+ * @param secondsPerMile - Pace in seconds per mile (internal unit)
+ * @param unit - 'miles' or 'km'
+ * @returns Formatted pace like "8:00/mi" or "4:58/km"
  */
-export const formatPaceWithUnit = (secondsPerMile, unit) => {
+export const formatPaceWithUnit = (secondsPerMile: number, unit: UnitPreference): string => {
   const pace = unit === 'km' ? paceToKm(secondsPerMile) : secondsPerMile;
   return `${formatPace(pace)}/${unit === 'km' ? 'km' : 'mi'}`;
 };
 
 /**
  * Format distance in selected unit
- * @param {number} miles - Distance in miles (internal unit)
- * @param {string} unit - 'miles' or 'km'
- * @returns {string} Formatted distance
+ * @param miles - Distance in miles (internal unit)
+ * @param unit - 'miles' or 'km'
+ * @returns Formatted distance
  */
-export const formatDistance = (miles, unit) => {
+export const formatDistance = (miles: number, unit: UnitPreference): string => {
   const distance = unit === 'km' ? milesToKm(miles) : miles;
   return distance.toFixed(1);
 };
@@ -133,12 +142,16 @@ export const formatDistance = (miles, unit) => {
  * Riegel formula: predict race time for a new distance based on a known performance
  * T2 = T1 × (D2/D1)^exponent
  *
- * @param {number} knownTimeSeconds - Time for the known distance in seconds
- * @param {number} knownDistanceMiles - Known distance in miles
- * @param {number} targetDistanceMiles - Target distance in miles
- * @returns {number} Predicted time in seconds
+ * @param knownTimeSeconds - Time for the known distance in seconds
+ * @param knownDistanceMiles - Known distance in miles
+ * @param targetDistanceMiles - Target distance in miles
+ * @returns Predicted time in seconds
  */
-export function predictRaceTime(knownTimeSeconds, knownDistanceMiles, targetDistanceMiles) {
+export function predictRaceTime(
+  knownTimeSeconds: number,
+  knownDistanceMiles: number,
+  targetDistanceMiles: number
+): number {
   return knownTimeSeconds * Math.pow(targetDistanceMiles / knownDistanceMiles, RIEGEL_EXPONENT);
 }
 
@@ -146,12 +159,16 @@ export function predictRaceTime(knownTimeSeconds, knownDistanceMiles, targetDist
  * Calculate sustainable pace (seconds per mile) for a goal distance
  * based on a recent race performance
  *
- * @param {string} recentRaceKey - Key from RACE_DISTANCES (e.g., '5k')
- * @param {number} recentTimeSeconds - Recent race finish time in seconds
- * @param {string} goalRaceKey - Key from RACE_DISTANCES
- * @returns {number} Sustainable pace in seconds per mile
+ * @param recentRaceKey - Key from RACE_DISTANCES (e.g., '5k')
+ * @param recentTimeSeconds - Recent race finish time in seconds
+ * @param goalRaceKey - Key from RACE_DISTANCES
+ * @returns Sustainable pace in seconds per mile
  */
-export function calculateSustainablePace(recentRaceKey, recentTimeSeconds, goalRaceKey) {
+export function calculateSustainablePace(
+  recentRaceKey: RaceKey,
+  recentTimeSeconds: number,
+  goalRaceKey: RaceKey
+): number {
   const recentDistance = RACE_DISTANCES[recentRaceKey].miles;
   const goalDistance = RACE_DISTANCES[goalRaceKey].miles;
 
@@ -165,11 +182,11 @@ export function calculateSustainablePace(recentRaceKey, recentTimeSeconds, goalR
  * - How aggressive the start was (deviation from sustainable)
  * - How far into the race we are
  *
- * @param {number} pacingDeviation - Seconds/mile faster than sustainable (negative = slower)
- * @param {number} raceFraction - How far through the race (0-1)
- * @returns {number} Seconds to add to base pace at this point
+ * @param pacingDeviation - Seconds/mile faster than sustainable (negative = slower)
+ * @param raceFraction - How far through the race (0-1)
+ * @returns Seconds to add to base pace at this point
  */
-export function calculateFadeAdjustment(pacingDeviation, raceFraction) {
+export function calculateFadeAdjustment(pacingDeviation: number, raceFraction: number): number {
   // If starting slower than sustainable, minimal positive fade
   if (pacingDeviation <= 0) {
     return 0;
@@ -191,14 +208,18 @@ export function calculateFadeAdjustment(pacingDeviation, raceFraction) {
 /**
  * Generate mile-by-mile splits with fade applied
  *
- * @param {string} goalRaceKey - Key from RACE_DISTANCES
- * @param {number} sustainablePace - Sustainable pace in sec/mile
- * @param {number} pacingAdjustment - Sec/mile to adjust start pace (negative = faster)
- * @returns {Array} Array of split objects
+ * @param goalRaceKey - Key from RACE_DISTANCES
+ * @param sustainablePace - Sustainable pace in sec/mile
+ * @param pacingAdjustment - Sec/mile to adjust start pace (negative = faster)
+ * @returns Array of split objects
  */
-export function generateSplits(goalRaceKey, sustainablePace, pacingAdjustment) {
+export function generateSplits(
+  goalRaceKey: RaceKey,
+  sustainablePace: number,
+  pacingAdjustment: number
+): Split[] {
   const distance = RACE_DISTANCES[goalRaceKey].miles;
-  const splits = [];
+  const splits: Split[] = [];
 
   // Pacing deviation is how much faster than sustainable (positive = aggressive)
   const pacingDeviation = -pacingAdjustment; // Flip sign: -10 adjustment = 10 faster
@@ -237,10 +258,10 @@ export function generateSplits(goalRaceKey, sustainablePace, pacingAdjustment) {
 /**
  * Assess fade risk based on pacing deviation
  *
- * @param {number} pacingDeviation - Seconds/mile faster than sustainable
- * @returns {Object} Risk assessment with level and message
+ * @param pacingDeviation - Seconds/mile faster than sustainable
+ * @returns Risk assessment with level and message
  */
-export function assessFadeRisk(pacingDeviation) {
+export function assessFadeRisk(pacingDeviation: number): FadeRiskAssessment {
   if (pacingDeviation <= 0) {
     return {
       level: 'conservative',
@@ -283,15 +304,10 @@ export function assessFadeRisk(pacingDeviation) {
 /**
  * Main calculation function - computes all outputs from inputs
  *
- * @param {Object} inputs
- * @param {string} inputs.goalRace - Goal race key (e.g., 'marathon')
- * @param {number} inputs.goalTimeSeconds - Goal finish time in seconds
- * @param {string} inputs.recentRace - Recent race key
- * @param {number} inputs.recentTimeSeconds - Recent race time in seconds
- * @param {number} inputs.pacingAdjustment - Seconds/mile faster (negative) or slower (positive)
- * @returns {Object} Calculation results
+ * @param inputs - Projection calculation inputs
+ * @returns Calculation results
  */
-export function calculateProjection(inputs) {
+export function calculateProjection(inputs: ProjectionInputs): ProjectionResult {
   const {
     goalRace,
     goalTimeSeconds,

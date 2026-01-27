@@ -14,7 +14,7 @@ import {
   generateSplits,
   assessFadeRisk,
   calculateProjection,
-} from './calculations.js';
+} from './calculations';
 
 describe('validateTimeString', () => {
   it('validates correct MM:SS format', () => {
@@ -252,9 +252,9 @@ describe('calculateProjection', () => {
 
   it('aggressive start increases fade risk level', () => {
     const inputs = {
-      goalRace: 'marathon',
+      goalRace: 'marathon' as const,
       goalTimeSeconds: 3 * 3600 + 30 * 60,
-      recentRace: 'half',
+      recentRace: 'half' as const,
       recentTimeSeconds: 1 * 3600 + 40 * 60,
     };
 

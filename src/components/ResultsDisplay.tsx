@@ -1,7 +1,13 @@
-import { secondsToTime, formatPaceWithUnit, milesToKm } from '../utils/calculations.js';
-import PaceChart from './PaceChart.jsx';
+import { secondsToTime, formatPaceWithUnit, milesToKm } from '../utils/calculations';
+import PaceChart from './PaceChart';
+import type { ProjectionResult, ComparableProjections, UnitPreference, Split, FadeRiskAssessment } from '../types';
 
-const Summary = ({ projection, unit }) => {
+interface SummaryProps {
+  projection: ProjectionResult;
+  unit: UnitPreference;
+}
+
+const Summary = ({ projection, unit }: SummaryProps) => {
   const delta = projection.timeDelta;
   const deltaClass = delta > 0 ? 'positive' : delta < 0 ? 'negative' : '';
 
@@ -27,14 +33,24 @@ const Summary = ({ projection, unit }) => {
   );
 };
 
-const FadeRiskIndicator = ({ fadeRisk }) => (
+interface FadeRiskIndicatorProps {
+  fadeRisk: FadeRiskAssessment;
+}
+
+const FadeRiskIndicator = ({ fadeRisk }: FadeRiskIndicatorProps) => (
   <div className={`risk-indicator ${fadeRisk.level}`}>
     <div className="level">Fade Risk: {fadeRisk.level.replace('-', ' ')}</div>
     <div className="message">{fadeRisk.message}</div>
   </div>
 );
 
-const ComparisonSummary = ({ main, comparisons, unit }) => {
+interface ComparisonSummaryProps {
+  main: ProjectionResult;
+  comparisons: ComparableProjections;
+  unit: UnitPreference;
+}
+
+const ComparisonSummary = ({ main, comparisons, unit }: ComparisonSummaryProps) => {
   const unitLabel = unit === 'km' ? 'km' : 'mi';
   const offsetLabel = unit === 'km' ? '6s' : '10s';
 
@@ -59,11 +75,16 @@ const ComparisonSummary = ({ main, comparisons, unit }) => {
   );
 };
 
-const SplitTable = ({ splits, unit }) => {
+interface SplitTableProps {
+  splits: Split[];
+  unit: UnitPreference;
+}
+
+const SplitTable = ({ splits, unit }: SplitTableProps) => {
   const distanceHeader = unit === 'km' ? 'km' : 'Mile';
 
   // Format distance display based on unit
-  const formatSplitDistance = (split) => {
+  const formatSplitDistance = (split: Split): string | number => {
     if (unit === 'km') {
       const startKm = milesToKm(split.mile - 1);
       const endKm = milesToKm(split.mile - 1 + split.distance);
@@ -109,7 +130,14 @@ const SplitTable = ({ splits, unit }) => {
   );
 };
 
-const ResultsDisplay = ({ projection, comparisons, unit = 'miles' }) => {
+interface ResultsDisplayProps {
+  projection: ProjectionResult | null;
+  comparisons: ComparableProjections | null;
+  compareMode: boolean;
+  unit?: UnitPreference;
+}
+
+const ResultsDisplay = ({ projection, comparisons, unit = 'miles' }: ResultsDisplayProps) => {
   if (!projection) {
     return (
       <div className="panel">
