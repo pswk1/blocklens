@@ -8,6 +8,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5173',
     screenshot: 'only-on-failure',
+    browserName: 'chromium',
   },
 
   webServer: {
@@ -15,8 +16,4 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
   },
-
-  projects: [
-    { name: 'chromium', use: { channel: 'chrome' } },
-  ],
 });
