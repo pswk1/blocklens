@@ -1,6 +1,37 @@
 import { RACE_DISTANCES, MILES_TO_KM } from '../utils/constants';
-import { validateTimeString } from '../utils/calculations';
-import type { AppInputs, UnitPreference, RaceKey } from '../types';
+import { validateTimeString, fahrenheitToCelsius, celsiusToFahrenheit } from '../utils/calculations';
+import type { AppInputs, UnitPreference, RaceKey, HumidityLevel } from '../types';
+
+interface HumidityToggleProps {
+  value: HumidityLevel;
+  onChange: (humidity: HumidityLevel) => void;
+}
+
+const HumidityToggle = ({ value, onChange }: HumidityToggleProps) => (
+  <div className="humidity-toggle">
+    <button
+      type="button"
+      className={`humidity-btn ${value === 'low' ? 'active' : ''}`}
+      onClick={() => onChange('low')}
+    >
+      Low
+    </button>
+    <button
+      type="button"
+      className={`humidity-btn ${value === 'moderate' ? 'active' : ''}`}
+      onClick={() => onChange('moderate')}
+    >
+      Moderate
+    </button>
+    <button
+      type="button"
+      className={`humidity-btn ${value === 'high' ? 'active' : ''}`}
+      onClick={() => onChange('high')}
+    >
+      High
+    </button>
+  </div>
+);
 
 interface UnitToggleProps {
   value: UnitPreference;
@@ -182,6 +213,54 @@ const RaceInputForm = ({ inputs, onInputChange }: RaceInputFormProps) => {
         <label htmlFor="compare-mode">
           Compare ±{inputs.unitPreference === 'km' ? '6' : '10'} sec/{unitLabel} scenarios
         </label>
+      </div>
+
+      <div className="weather-section">
+        <div className="weather-toggle">
+          <input
+            id="weather-enabled"
+            type="checkbox"
+            checked={inputs.weatherEnabled}
+            onChange={(e) => handleChange('weatherEnabled')(e.target.checked)}
+          />
+          <label htmlFor="weather-enabled">Adjust for weather conditions</label>
+        </div>
+
+        {inputs.weatherEnabled && (
+          <div className="weather-inputs">
+            <div className="form-group">
+              <label htmlFor="temperature">
+                Temperature ({inputs.unitPreference === 'km' ? '°C' : '°F'})
+              </label>
+              <input
+                id="temperature"
+                type="range"
+                min={inputs.unitPreference === 'km' ? 5 : 40}
+                max={inputs.unitPreference === 'km' ? 35 : 95}
+                value={inputs.unitPreference === 'km' ? fahrenheitToCelsius(inputs.temperature) : inputs.temperature}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  const tempF = inputs.unitPreference === 'km' ? celsiusToFahrenheit(value) : value;
+                  handleChange('temperature')(tempF);
+                }}
+                aria-label={`Temperature: ${inputs.unitPreference === 'km' ? fahrenheitToCelsius(inputs.temperature) : inputs.temperature}°${inputs.unitPreference === 'km' ? 'C' : 'F'}`}
+              />
+              <div className="slider-value" aria-hidden="true">
+                {inputs.unitPreference === 'km'
+                  ? `${fahrenheitToCelsius(inputs.temperature)}°C`
+                  : `${inputs.temperature}°F`}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Humidity</label>
+              <HumidityToggle
+                value={inputs.humidity}
+                onChange={handleChange('humidity')}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

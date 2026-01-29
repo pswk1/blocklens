@@ -1,6 +1,6 @@
-import { secondsToTime, formatPaceWithUnit, milesToKm } from '../utils/calculations';
+import { secondsToTime, formatPaceWithUnit, milesToKm, fahrenheitToCelsius } from '../utils/calculations';
 import PaceChart from './PaceChart';
-import type { ProjectionResult, ComparableProjections, UnitPreference, Split, FadeRiskAssessment } from '../types';
+import type { ProjectionResult, ComparableProjections, UnitPreference, Split, FadeRiskAssessment, HumidityLevel } from '../types';
 
 interface SummaryProps {
   projection: ProjectionResult;
@@ -43,6 +43,33 @@ const FadeRiskIndicator = ({ fadeRisk }: FadeRiskIndicatorProps) => (
     <div className="message">{fadeRisk.message}</div>
   </div>
 );
+
+interface WeatherImpactProps {
+  projectedTime: number;
+  weatherAdjustment: number;
+  temperature: number;
+  humidity: HumidityLevel;
+  unit: UnitPreference;
+}
+
+const WeatherImpact = ({ projectedTime, weatherAdjustment, temperature, humidity, unit }: WeatherImpactProps) => {
+  // Calculate how much time weather adds
+  const timeWithoutWeather = projectedTime / (1 + weatherAdjustment);
+  const weatherTimeDelta = projectedTime - timeWithoutWeather;
+
+  const tempDisplay = unit === 'km'
+    ? `${fahrenheitToCelsius(temperature)}°C`
+    : `${temperature}°F`;
+
+  return (
+    <div className="weather-impact">
+      <span className="weather-icon">🌡️</span>
+      <span className="weather-text">
+        Weather: +{secondsToTime(weatherTimeDelta)} ({tempDisplay}, {humidity} humidity)
+      </span>
+    </div>
+  );
+};
 
 interface ComparisonSummaryProps {
   main: ProjectionResult;
@@ -135,9 +162,21 @@ interface ResultsDisplayProps {
   comparisons: ComparableProjections | null;
   compareMode: boolean;
   unit?: UnitPreference;
+  weatherEnabled?: boolean;
+  weatherAdjustment?: number;
+  temperature?: number;
+  humidity?: HumidityLevel;
 }
 
-const ResultsDisplay = ({ projection, comparisons, unit = 'miles' }: ResultsDisplayProps) => {
+const ResultsDisplay = ({
+  projection,
+  comparisons,
+  unit = 'miles',
+  weatherEnabled = false,
+  weatherAdjustment = 0,
+  temperature = 55,
+  humidity = 'moderate',
+}: ResultsDisplayProps) => {
   if (!projection) {
     return (
       <div className="panel">
@@ -151,6 +190,15 @@ const ResultsDisplay = ({ projection, comparisons, unit = 'miles' }: ResultsDisp
     <div className="panel">
       <h2>Projected Splits</h2>
       <Summary projection={projection} unit={unit} />
+      {weatherEnabled && weatherAdjustment > 0 && (
+        <WeatherImpact
+          projectedTime={projection.projectedFinishTime}
+          weatherAdjustment={weatherAdjustment}
+          temperature={temperature}
+          humidity={humidity}
+          unit={unit}
+        />
+      )}
       <FadeRiskIndicator fadeRisk={projection.fadeRisk} />
       <PaceChart
         splits={projection.splits}

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import RaceInputForm from './components/RaceInputForm';
 import ResultsDisplay from './components/ResultsDisplay';
-import { timeToSeconds, calculateProjection } from './utils/calculations';
+import { timeToSeconds, calculateProjection, calculateWeatherAdjustment } from './utils/calculations';
 import type { AppInputs, ProjectionResult, ComparableProjections } from './types';
 
 const STORAGE_KEY = 'blocklens-inputs';
@@ -14,6 +14,9 @@ const DEFAULT_INPUTS: AppInputs = {
   pacingAdjustment: 0,
   compareMode: false,
   unitPreference: 'miles',
+  weatherEnabled: false,
+  temperature: 55,
+  humidity: 'moderate',
 };
 
 const COMPARE_OFFSET = 10; // seconds per mile
@@ -49,6 +52,11 @@ const App = () => {
     }
   }, [inputs]);
 
+  // Calculate weather adjustment factor
+  const weatherAdjustment = inputs.weatherEnabled
+    ? calculateWeatherAdjustment(inputs.temperature, inputs.humidity)
+    : 0;
+
   const projections = useMemo<AppProjections | null>(() => {
     const goalTimeSeconds = timeToSeconds(inputs.goalTime);
     const recentTimeSeconds = timeToSeconds(inputs.recentTime);
@@ -57,11 +65,15 @@ const App = () => {
       return null;
     }
 
+    // Apply weather adjustment to recent race time
+    // Hot weather = slower sustainable pace = longer projected time
+    const adjustedRecentTime = recentTimeSeconds * (1 + weatherAdjustment);
+
     const baseParams = {
       goalRace: inputs.goalRace,
       goalTimeSeconds,
       recentRace: inputs.recentRace,
-      recentTimeSeconds,
+      recentTimeSeconds: adjustedRecentTime,
     };
 
     const main = calculateProjection({
@@ -88,7 +100,7 @@ const App = () => {
       main,
       comparisons: { aggressive, conservative },
     };
-  }, [inputs]);
+  }, [inputs, weatherAdjustment]);
 
   return (
     <div className="app">
@@ -100,6 +112,10 @@ const App = () => {
           comparisons={projections?.comparisons ?? null}
           compareMode={inputs.compareMode}
           unit={inputs.unitPreference}
+          weatherEnabled={inputs.weatherEnabled}
+          weatherAdjustment={weatherAdjustment}
+          temperature={inputs.temperature}
+          humidity={inputs.humidity}
         />
       </div>
     </div>

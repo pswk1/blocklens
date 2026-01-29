@@ -8,6 +8,7 @@ import {
 import type {
   RaceKey,
   UnitPreference,
+  HumidityLevel,
   Split,
   FadeRiskAssessment,
   ProjectionResult,
@@ -136,6 +137,44 @@ export const formatPaceWithUnit = (secondsPerMile: number, unit: UnitPreference)
 export const formatDistance = (miles: number, unit: UnitPreference): string => {
   const distance = unit === 'km' ? milesToKm(miles) : miles;
   return distance.toFixed(1);
+};
+
+/**
+ * Convert Fahrenheit to Celsius
+ */
+export const fahrenheitToCelsius = (tempF: number): number => Math.round((tempF - 32) * 5 / 9);
+
+/**
+ * Convert Celsius to Fahrenheit
+ */
+export const celsiusToFahrenheit = (tempC: number): number => Math.round(tempC * 9 / 5 + 32);
+
+/**
+ * Calculate weather-based pace adjustment
+ * Based on running research: ~1.5% slowdown per 10°F above optimal (55°F)
+ * Humidity compounds the effect
+ *
+ * @param tempF - Temperature in Fahrenheit
+ * @param humidity - Humidity level
+ * @returns Slowdown as decimal (0.03 = 3% slower)
+ */
+export const calculateWeatherAdjustment = (tempF: number, humidity: HumidityLevel): number => {
+  const optimalTemp = 55; // Optimal running temperature in °F
+  const degreesAboveOptimal = Math.max(0, tempF - optimalTemp);
+
+  // Base slowdown: ~1.5% per 10°F above optimal
+  let slowdownPercent = (degreesAboveOptimal / 10) * 1.5;
+
+  // Humidity multiplier
+  const humidityMultiplier: Record<HumidityLevel, number> = {
+    low: 1.0,
+    moderate: 1.1,
+    high: 1.2,
+  };
+
+  slowdownPercent *= humidityMultiplier[humidity];
+
+  return slowdownPercent / 100; // Return as decimal
 };
 
 /**

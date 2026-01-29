@@ -8,6 +8,9 @@ import {
   milesToKm,
   formatPaceWithUnit,
   formatDistance,
+  fahrenheitToCelsius,
+  celsiusToFahrenheit,
+  calculateWeatherAdjustment,
   predictRaceTime,
   calculateSustainablePace,
   calculateFadeAdjustment,
@@ -263,5 +266,92 @@ describe('calculateProjection', () => {
 
     expect(conservative.fadeRisk.level).toBe('conservative');
     expect(['moderate', 'high', 'very-high']).toContain(aggressive.fadeRisk.level);
+  });
+});
+
+describe('temperature conversions', () => {
+  describe('fahrenheitToCelsius', () => {
+    it('converts freezing point', () => {
+      expect(fahrenheitToCelsius(32)).toBe(0);
+    });
+
+    it('converts boiling point', () => {
+      expect(fahrenheitToCelsius(212)).toBe(100);
+    });
+
+    it('converts typical running temperatures', () => {
+      expect(fahrenheitToCelsius(55)).toBe(13); // Optimal
+      expect(fahrenheitToCelsius(75)).toBe(24);
+      expect(fahrenheitToCelsius(85)).toBe(29);
+    });
+  });
+
+  describe('celsiusToFahrenheit', () => {
+    it('converts freezing point', () => {
+      expect(celsiusToFahrenheit(0)).toBe(32);
+    });
+
+    it('converts boiling point', () => {
+      expect(celsiusToFahrenheit(100)).toBe(212);
+    });
+
+    it('converts typical running temperatures', () => {
+      expect(celsiusToFahrenheit(13)).toBe(55); // Optimal
+      expect(celsiusToFahrenheit(24)).toBe(75);
+      expect(celsiusToFahrenheit(29)).toBe(84);
+    });
+  });
+
+  it('round-trips correctly', () => {
+    const temps = [40, 55, 65, 75, 85, 95];
+    for (const temp of temps) {
+      const celsius = fahrenheitToCelsius(temp);
+      const backToF = celsiusToFahrenheit(celsius);
+      expect(Math.abs(backToF - temp)).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('calculateWeatherAdjustment', () => {
+  it('returns 0 at optimal temperature (55°F)', () => {
+    expect(calculateWeatherAdjustment(55, 'low')).toBe(0);
+    expect(calculateWeatherAdjustment(55, 'moderate')).toBe(0);
+    expect(calculateWeatherAdjustment(55, 'high')).toBe(0);
+  });
+
+  it('returns 0 below optimal temperature', () => {
+    expect(calculateWeatherAdjustment(40, 'low')).toBe(0);
+    expect(calculateWeatherAdjustment(50, 'moderate')).toBe(0);
+  });
+
+  it('increases with temperature above optimal', () => {
+    const at65 = calculateWeatherAdjustment(65, 'low');
+    const at75 = calculateWeatherAdjustment(75, 'low');
+    const at85 = calculateWeatherAdjustment(85, 'low');
+
+    expect(at65).toBeGreaterThan(0);
+    expect(at75).toBeGreaterThan(at65);
+    expect(at85).toBeGreaterThan(at75);
+  });
+
+  it('humidity increases the adjustment', () => {
+    const temp = 75;
+    const lowHumidity = calculateWeatherAdjustment(temp, 'low');
+    const moderateHumidity = calculateWeatherAdjustment(temp, 'moderate');
+    const highHumidity = calculateWeatherAdjustment(temp, 'high');
+
+    expect(moderateHumidity).toBeGreaterThan(lowHumidity);
+    expect(highHumidity).toBeGreaterThan(moderateHumidity);
+  });
+
+  it('calculates expected values for common conditions', () => {
+    // 65°F, low humidity: 10°F above optimal = 1.5% slowdown
+    expect(calculateWeatherAdjustment(65, 'low')).toBeCloseTo(0.015, 3);
+
+    // 75°F, moderate humidity: 20°F above optimal = 3% * 1.1 = 3.3% slowdown
+    expect(calculateWeatherAdjustment(75, 'moderate')).toBeCloseTo(0.033, 3);
+
+    // 85°F, high humidity: 30°F above optimal = 4.5% * 1.2 = 5.4% slowdown
+    expect(calculateWeatherAdjustment(85, 'high')).toBeCloseTo(0.054, 3);
   });
 });

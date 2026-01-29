@@ -5,6 +5,7 @@
 // Unit system
 export type UnitPreference = 'miles' | 'km';
 export type RaceKey = '5k' | '10k' | 'half' | 'marathon';
+export type HumidityLevel = 'low' | 'moderate' | 'high';
 
 // Race distance configuration
 export interface RaceDistance {
@@ -22,6 +23,9 @@ export interface AppInputs {
   pacingAdjustment: number;
   compareMode: boolean;
   unitPreference: UnitPreference;
+  weatherEnabled: boolean;
+  temperature: number; // Stored in Fahrenheit
+  humidity: HumidityLevel;
 }
 
 // Split data for each mile/segment
