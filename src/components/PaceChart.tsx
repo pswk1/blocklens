@@ -124,9 +124,17 @@ const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }: Pac
     return String(mile);
   };
 
+  // Generate accessible chart description
+  const firstPace = splits[0]?.pace;
+  const lastPace = splits[splits.length - 1]?.pace;
+  const chartDescription = firstPace && lastPace
+    ? `Pace projection chart showing pace changing from ${formatPaceWithUnit(firstPace, unit)} at the start to ${formatPaceWithUnit(lastPace, unit)} at the finish. Sustainable pace is ${formatPaceWithUnit(sustainablePace, unit)}.`
+    : 'Pace projection chart showing pace over distance.';
+
   return (
-    <div className="pace-chart">
+    <figure className="pace-chart" role="figure" aria-label="Pace projection chart">
       <h3>Pace Over Distance</h3>
+      <figcaption className="visually-hidden">{chartDescription}</figcaption>
       <ResponsiveContainer width="100%" height={compareMode ? 240 : 200}>
         <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
@@ -214,7 +222,7 @@ const PaceChart = ({ splits, sustainablePace, comparisons, unit = 'miles' }: Pac
           )}
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </figure>
   );
 };
 

@@ -27,35 +27,43 @@ const UnitToggle = ({ value, onChange }: UnitToggleProps) => (
 );
 
 interface TimeInputProps {
+  id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
   error: string | null;
 }
 
-const TimeInput = ({ label, value, onChange, error }: TimeInputProps) => (
-  <div className={`form-group ${error ? 'has-error' : ''}`}>
-    <label>{label}</label>
-    <input
-      type="text"
-      placeholder="M:SS or H:MM:SS"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-    {error && <div className="error-message">{error}</div>}
-  </div>
-);
+const TimeInput = ({ id, label, value, onChange, error }: TimeInputProps) => {
+  const errorId = `${id}-error`;
+  return (
+    <div className={`form-group ${error ? 'has-error' : ''}`}>
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        type="text"
+        placeholder="M:SS or H:MM:SS"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+      />
+      {error && <div id={errorId} className="error-message" role="alert">{error}</div>}
+    </div>
+  );
+};
 
 interface RaceSelectProps {
+  id: string;
   label: string;
   value: RaceKey;
   onChange: (race: RaceKey) => void;
 }
 
-const RaceSelect = ({ label, value, onChange }: RaceSelectProps) => (
+const RaceSelect = ({ id, label, value, onChange }: RaceSelectProps) => (
   <div className="form-group">
-    <label>{label}</label>
-    <select value={value} onChange={(e) => onChange(e.target.value as RaceKey)}>
+    <label htmlFor={id}>{label}</label>
+    <select id={id} value={value} onChange={(e) => onChange(e.target.value as RaceKey)}>
       {(Object.entries(RACE_DISTANCES) as [RaceKey, { label: string; miles: number; km: number }][]).map(([key, race]) => (
         <option key={key} value={key}>
           {race.label}
@@ -105,11 +113,13 @@ const RaceInputForm = ({ inputs, onInputChange }: RaceInputFormProps) => {
 
       <div className="form-row">
         <RaceSelect
+          id="goal-race"
           label="Goal Race"
           value={inputs.goalRace}
           onChange={handleChange('goalRace')}
         />
         <TimeInput
+          id="goal-time"
           label="Goal Time"
           value={inputs.goalTime}
           onChange={handleChange('goalTime')}
@@ -119,11 +129,13 @@ const RaceInputForm = ({ inputs, onInputChange }: RaceInputFormProps) => {
 
       <div className="form-row">
         <RaceSelect
+          id="recent-race"
           label="Recent Race"
           value={inputs.recentRace}
           onChange={handleChange('recentRace')}
         />
         <TimeInput
+          id="recent-time"
           label="Recent Time"
           value={inputs.recentTime}
           onChange={handleChange('recentTime')}
@@ -132,17 +144,26 @@ const RaceInputForm = ({ inputs, onInputChange }: RaceInputFormProps) => {
       </div>
 
       <div className="form-group">
-        <label>
+        <label htmlFor="pacing-adjustment">
           Pacing Adjustment (sec/{unitLabel} from sustainable)
         </label>
         <input
+          id="pacing-adjustment"
           type="range"
           min="-30"
           max="30"
           value={inputs.pacingAdjustment}
           onChange={(e) => handleChange('pacingAdjustment')(Number(e.target.value))}
+          aria-label={`Pacing adjustment: ${inputs.pacingAdjustment} seconds per mile from sustainable pace`}
+          aria-valuetext={
+            inputs.pacingAdjustment === 0
+              ? 'Even, sustainable pace'
+              : inputs.pacingAdjustment < 0
+              ? `${displayAdjustment} seconds per ${unitLabel} faster than sustainable`
+              : `${displayAdjustment} seconds per ${unitLabel} slower than sustainable`
+          }
         />
-        <div className="slider-value">
+        <div className="slider-value" aria-hidden="true">
           {inputs.pacingAdjustment === 0
             ? 'Even (sustainable pace)'
             : inputs.pacingAdjustment < 0
@@ -151,14 +172,17 @@ const RaceInputForm = ({ inputs, onInputChange }: RaceInputFormProps) => {
         </div>
       </div>
 
-      <label className="compare-toggle">
+      <div className="compare-toggle">
         <input
+          id="compare-mode"
           type="checkbox"
           checked={inputs.compareMode}
           onChange={(e) => handleChange('compareMode')(e.target.checked)}
         />
-        <span>Compare ±{inputs.unitPreference === 'km' ? '6' : '10'} sec/{unitLabel} scenarios</span>
-      </label>
+        <label htmlFor="compare-mode">
+          Compare ±{inputs.unitPreference === 'km' ? '6' : '10'} sec/{unitLabel} scenarios
+        </label>
+      </div>
     </div>
   );
 };
