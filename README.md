@@ -15,13 +15,15 @@ BlockLens takes your recent race performance and uses the [Riegel formula](https
 - **Comparison mode** — Overlay aggressive and conservative scenarios (±10 sec/mile) to compare outcomes
 - **Visual chart** — See your projected pace curve with the sustainable pace reference line
 - **Risk indicator** — Get a quick read on fade risk from conservative to blow-up territory
+- **Unit toggle** — Switch between miles and kilometers
 
 ## Getting Started
 
 ```
 npm install      # Install dependencies
 npm run dev      # Start development server
-npm test         # Run tests
+npm test         # Run unit tests
+npm run test:e2e # Run E2E tests
 npm run build    # Build for production
 ```
 
@@ -48,9 +50,11 @@ The model is intentionally soft. Aggressive pacing *can* work — but the risk i
 
 ## Tech Stack
 
-- React 19 + Vite
+- React 19 + Vite + TypeScript
 - Recharts for visualization
-- Vitest for testing
+- Vitest for unit testing
+- Playwright for E2E testing
+- GitHub Actions for CI/CD
 
 ## License
 

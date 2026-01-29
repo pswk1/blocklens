@@ -5,30 +5,38 @@ A React app that helps runners explore pacing strategies and visualize projected
 ## Tech Stack
 
 - React 19 with Vite
+- TypeScript (strict mode)
 - Recharts for visualization
-- Vitest for testing
+- Vitest for unit testing
+- Playwright for E2E testing
+- GitHub Actions for CI/CD
 
 ## Commands
 
 - `npm run dev` — start dev server
 - `npm run build` — production build
 - `npm test` — run unit tests
+- `npm run test:e2e` — run E2E tests
+- `npm run test:e2e:ui` — run E2E tests with visual UI
 
 ## Project Structure
 
 ```
 src/
 ├── components/       # React UI components
-│   ├── RaceInputForm.jsx
-│   ├── ResultsDisplay.jsx
-│   └── PaceChart.jsx
+│   ├── RaceInputForm.tsx
+│   ├── ResultsDisplay.tsx
+│   └── PaceChart.tsx
 ├── utils/            # Calculation logic (separate from UI)
-│   ├── constants.js
-│   ├── calculations.js
-│   └── calculations.test.js
-├── App.jsx
-├── main.jsx
+│   ├── constants.ts
+│   ├── calculations.ts
+│   └── calculations.test.ts
+├── types.ts          # Shared TypeScript types
+├── App.tsx
+├── main.tsx
 └── index.css
+e2e/
+└── app.spec.ts       # Playwright E2E tests
 ```
 
 ## Conventions
@@ -37,6 +45,7 @@ src/
 - Use `const` for all variables and function expressions (arrow functions)
 - Functional components only (as arrow functions)
 - Keep calculation logic separate from UI components
+- Use TypeScript strict mode with explicit return types
 
 ## Key Domain Concepts
 
@@ -57,5 +66,6 @@ The goal is to visualize tradeoffs between pacing strategies, not prescribe a si
 - Pace chart showing fade over distance
 - Comparison mode (±10 sec/mile scenarios overlaid)
 - Fade risk indicator (conservative → very high)
+- Unit toggle (miles/kilometers)
 - localStorage persistence for inputs
 - Mobile-responsive layout
