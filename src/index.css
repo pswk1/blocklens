@@ -33,6 +33,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 h1, h2, h3 {
@@ -47,6 +48,7 @@ h1, h2, h3 {
   margin: 0 auto;
   padding: 2rem;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .app-title {
@@ -117,7 +119,7 @@ h1, h2, h3 {
 
   .split-table {
     font-size: 0.8rem;
-    min-width: 400px;
+    min-width: 340px;
   }
 
   .split-table th,
@@ -150,6 +152,8 @@ h1, h2, h3 {
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 1.5rem;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .panel h2 {
@@ -440,6 +444,8 @@ h1, h2, h3 {
 /* Pace chart */
 .pace-chart {
   margin-bottom: 1.5rem;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .pace-chart h3 {
