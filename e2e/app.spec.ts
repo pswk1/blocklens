@@ -40,4 +40,31 @@ test.describe('BlockLens', () => {
     await page.reload();
     await expect(goalTimeInput).toHaveValue('4:00:00');
   });
+
+  test('weather toggle shows inputs and affects projection', async ({ page }) => {
+    await page.goto('/');
+
+    // Weather inputs should be hidden initially
+    await expect(page.locator('.weather-inputs')).not.toBeVisible();
+
+    // Enable weather adjustment
+    await page.click('label[for="weather-enabled"]');
+
+    // Weather inputs should now be visible
+    await expect(page.locator('.weather-inputs')).toBeVisible();
+
+    // Temperature slider should be present
+    await expect(page.locator('#temperature')).toBeVisible();
+
+    // Humidity buttons should be present
+    await expect(page.locator('.humidity-toggle')).toBeVisible();
+
+    // Set temperature to hot (slide to high value)
+    const tempSlider = page.locator('#temperature');
+    await tempSlider.fill('85');
+
+    // Weather impact indicator should appear in results
+    await expect(page.locator('.weather-impact')).toBeVisible();
+    await expect(page.locator('.weather-text')).toContainText('Weather:');
+  });
 });

@@ -67,5 +67,14 @@ The goal is to visualize tradeoffs between pacing strategies, not prescribe a si
 - Comparison mode (±10 sec/mile scenarios overlaid)
 - Fade risk indicator (conservative → very high)
 - Unit toggle (miles/kilometers)
+- Weather adjustment (temperature and humidity impact on pace)
 - localStorage persistence for inputs
 - Mobile-responsive layout
+- WCAG 2.1 accessibility (labels, focus states, color contrast)
+
+## Weather Model
+
+Adjusts sustainable pace based on race day conditions:
+- ~1.5% slowdown per 10°F above optimal (55°F / 13°C)
+- Humidity multiplier: low (1.0×), moderate (1.1×), high (1.2×)
+- Temperature display follows unit preference (°F with miles, °C with km)
